@@ -22,7 +22,7 @@
 		"lezer"
 	],
 	"author": "Joel Gustafson",
-	"license": "MIT",
+	"license": "GPLv3",
 	"bugs": {
 		"url": "https://github.com/joeltg/lezer-circom/issues"
 	},
