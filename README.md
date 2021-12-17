@@ -1,4 +1,4 @@
-# lezer-tasl
+# lezer-circom
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme) [![license](https://img.shields.io/github/license/joeltg/lezer-circom)](https://opensource.org/licenses/MIT) [![NPM version](https://img.shields.io/npm/v/lezer-circom)](https://www.npmjs.com/package/lezer-circom) ![TypeScript types](https://img.shields.io/npm/types/lezer-circom)
 
