@@ -6,6 +6,8 @@ A Lezer grammar for the [circom](https://docs.circom.io/) language.
 
 > ⚠️ This is a low-level library for parsing a low-level circom **AST** - if you're looking for the CodeMirror language extension, you want the [codemirror-lang-circom](https://github.com/joeltg/codemirror-lang-circom) package instead.
 
+> ⚠️ This grammar is very rough alpha-quality! There are almost certainly bugs.
+
 ## Table of Contents
 
 - [Install](#install)
