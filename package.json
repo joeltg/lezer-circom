@@ -1,0 +1,38 @@
+{
+	"name": "lezer-circom",
+	"version": "0.0.0",
+	"description": "A Lezer grammar for the Circom language",
+	"type": "module",
+	"main": "index.js",
+	"types": "index.d.ts",
+	"files": [
+		"index.js",
+		"index.d.ts"
+	],
+	"scripts": {
+		"test": "ava",
+		"build": "lezer-generator circom.grammar -o index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/joeltg/lezer-circom.git"
+	},
+	"keywords": [
+		"circom",
+		"lezer"
+	],
+	"author": "Joel Gustafson",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/joeltg/lezer-circom/issues"
+	},
+	"homepage": "https://github.com/joeltg/lezer-circom#readme",
+	"dependencies": {
+		"@lezer/common": "^0.15.7",
+		"@lezer/lr": "^0.15.4"
+	},
+	"devDependencies": {
+		"@lezer/generator": "^0.15.2",
+		"ava": "^4.0.0-rc.1"
+	}
+}
