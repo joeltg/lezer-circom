@@ -105,8 +105,7 @@ statement {
 // there's no way to syntactically distinguish between them.
 Assignment { Identifier ArrayIndex* "=" nestedArray<topLevelNumericExpression> }
 
-// Can the main component be declared but not initialized? I'm assuming no.....
-MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Identifier ParameterValueList }
+MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Call }
 PublicSignalsList { OpenBrace kw<"public"> OpenBracket list<Identifier> CloseBracket CloseBrace }
 
 block {
