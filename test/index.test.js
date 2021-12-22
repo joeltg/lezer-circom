@@ -10,18 +10,7 @@ function traverse(input, t) {
 	const cursor = tree.cursor()
 
 	do {
-		// console.log(cursor.name)
-		if (cursor.name === "ArrayIndex") {
-			// console.log(cursor.node)
-			const child = cursor.node.getChild("NumericExpression")
-			console.log("ArrayIndex child", child && child.name)
-		} else if (cursor.name === "Addition") {
-			const children = cursor.node.getChildren("NumericExpression")
-			console.log(
-				"Addition children",
-				children.map((child) => child.name)
-			)
-		} else if (cursor.node.type.isError) {
+		if (cursor.node.type.isError) {
 			const { from, to } = cursor
 			const value = JSON.stringify(input.slice(from, to))
 			t.fail(`error from ${from} to ${to}: ${value}`)
