@@ -12,7 +12,7 @@ template Example () {
     assert(a > 2);
     
     component hash = Poseidon(2);
-    hash.inputs[0] <== a;
+    hash.inputs[0 + 1] <== a;
     hash.inputs[1] <== b;
 
     log(hash.out);
