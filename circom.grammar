@@ -64,22 +64,27 @@
   L9 @left
 }
 
-@top Circuit { content<circuitStatement, circuitBlock> }
-
-content<statement, block> { (statement ";" | block )* }
-
 @skip { space | LineComment | BlockComment }
 
 kw<word> { @specialize[@name={word}]<Identifier, word> }
 list<item> { (item ("," item)*)? }
+content<statement, block> { (statement ";" | block )* }
+
+Array<item> { OpenBracket Items { list<item> } CloseBracket }
+nestedArray<item> { item | Array<nestedArray<item>> }
 
 ArraySize { OpenBracket topLevelNumericExpression CloseBracket }
 ArrayIndex { OpenBracket topLevelNumericExpression CloseBracket }
 ParameterList { OpenParen Parameters { list<Identifier> } CloseParen }
 ParameterValueList { OpenParen ParameterValues { list<topLevelNumericExpression> } CloseParen }
 
-Array<item> { OpenBracket Items { list<item> } CloseBracket }
-nestedArray<item> { item | Array<nestedArray<item>> }
+// the docs say conditionals aren't allowed here
+Log { kw<"log"> OpenParen (numericExpression | booleanExpression) CloseParen } 
+Assert { kw<"assert"> OpenParen booleanExpression CloseParen }
+
+
+
+@top Circuit { content<circuitStatement, circuitBlock> }
 
 circuitStatement[@isGroup="CircomContent"] {
     Pragma { kw<"pragma"> kw<"circom"> CompilerVersion }
@@ -95,20 +100,39 @@ circuitBlock[@isGroup="CircomContent"] {
   | TemplateDeclaration
 }
 
+body<statement, block> { OpenBrace (statement ";" | block)* CloseBrace }
+
 FunctionDeclaration { kw<"function"> Identifier ParameterList FunctionBody }
-FunctionBody { body }
+FunctionBody { body<functionStatement, functionBlock> }
+
+functionStatement {
+    VariableDeclaration
+  | Assignment
+  | arithmeticAssignment
+  | bitwiseAssignment
+  | Assert
+  | Log
+}
+
+functionBlock {
+    If<functionStatement, functionBlock>
+  | ForLoop<functionStatement, functionBlock>
+  | WhileLoop<functionStatement, functionBlock>
+}
 
 TemplateDeclaration { kw<"template"> kw<"parallel">? Identifier ParameterList TemplateBody }
-TemplateBody { body }
+TemplateBody { body<topLevelTemplateStatement, templateBlock> }
 
-body { OpenBrace (statement ";" | block)* CloseBrace }
-
-statement {
+topLevelTemplateStatement {
     InputSignalDeclaration { kw<"signal"> kw<"input"> Identifier ArraySize* }
   | OutputSignalDeclaration { kw<"signal"> kw<"output"> Identifier ArraySize* }
   | IntermediateSignalDeclaration { kw<"signal"> Identifier ArraySize* ~reference }
-  | VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
   | ComponentDeclaration { kw<"component"> Identifier ArraySize* ("=" Call)? }
+  | templateStatement
+}
+
+templateStatement {
+    VariableDeclaration
   | Assignment
   | arithmeticAssignment
   | bitwiseAssignment
@@ -117,38 +141,39 @@ statement {
   | AssignConstraintSignalRight { topLevelNumericExpression "==>" Value }
   | AssignConstraintSignalLeft { Value "<==" topLevelNumericExpression }
   | ConstrainSignal { topLevelNumericExpression "===" topLevelNumericExpression }
-  | Assert { kw<"assert"> OpenParen booleanExpression CloseParen }
-    // the docs say conditionals aren't allowed here
-  | Log { kw<"log"> OpenParen (numericExpression | booleanExpression) CloseParen } 
+  | Assert
+  | Log
 }
 
-// Assignment could either be a component assignment or a variable assignment,
-// there's no way to syntactically distinguish between them.
+templateBlock {
+    If<templateStatement, templateBlock>
+  | ForLoop<templateStatement, templateBlock>
+  | WhileLoop<templateStatement, templateBlock>
+}
+
+VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
 Assignment { Identifier ArrayIndex* "=" nestedArray<topLevelNumericExpression> }
 
-block {
-    If
-  | ForLoop
-  | WhileLoop
+If<statement, block> {
+  kw<"if"> OpenParen IfCondition CloseParen IfBody<statement, block> (kw<"else"> ElseBody<statement, block>)?
 }
 
-If { kw<"if"> OpenParen IfCondition CloseParen IfBody (kw<"else"> ElseBody)? }
 IfCondition { booleanExpression }
-IfBody { statement ";" | body }
-ElseBody { statement ";" | body }
+IfBody<statement, block> { statement ";" | body<statement, block> }
+ElseBody<statement, block> { statement ";" | body<statement, block> }
 
-ForLoop {
-  kw<"for"> OpenParen ForLoopInitialization ";" ForLoopCondition ";" ForLoopStepCode CloseParen ForLoopBody
+ForLoop<statement, block> {
+  kw<"for"> OpenParen ForLoopInitialization<statement> ";" ForLoopCondition ";" ForLoopStepCode<statement> CloseParen ForLoopBody<statement, block>
 }
 
-ForLoopInitialization { statement }
+ForLoopInitialization<statement> { statement }
 ForLoopCondition { booleanExpression }
-ForLoopStepCode { statement }
-ForLoopBody { statement ";" | body }
+ForLoopStepCode<statement> { statement }
+ForLoopBody<statement, block> { statement ";" | body<statement, block> }
 
-WhileLoop { kw<"while"> OpenParen WhileLoopCondition CloseParen WhileLoopBody }
+WhileLoop<statement, block> { kw<"while"> OpenParen WhileLoopCondition CloseParen WhileLoopBody<statement, block> }
 WhileLoopCondition { booleanExpression }
-WhileLoopBody { statement ";" | body }
+WhileLoopBody<statement, block> { statement ";" | body<statement, block> }
 
 booleanExpression[@isGroup="BooleanExpression"] {
     BooleanExpressionGroup { OpenParen booleanExpression CloseParen }
