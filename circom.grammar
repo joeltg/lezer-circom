@@ -73,10 +73,10 @@ list<item> { (item ("," item)*)? }
 
 ArraySize { OpenBracket topLevelNumericExpression CloseBracket }
 ArrayIndex { OpenBracket topLevelNumericExpression CloseBracket }
-ParameterList { OpenParen list<Identifier> CloseParen }
-ParameterValueList { OpenParen list<topLevelNumericExpression> CloseParen }
+ParameterList { OpenParen Parameters { list<Identifier> } CloseParen }
+ParameterValueList { OpenParen ParameterValues { list<topLevelNumericExpression> } CloseParen }
 
-Array<item> { OpenBracket list<item> CloseBracket }
+Array<item> { OpenBracket Items { list<item> } CloseBracket }
 nestedArray<item> { item | Array<nestedArray<item>> }
 
 statement {
