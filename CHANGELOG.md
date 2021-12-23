@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added `Items` named node to `Array`
 - Added `Parameters` to `ParameterList` and `ParameterValues` to `ParameterValueList`
+- Prior to v0.0.4, the parser would parse any statement and block in any context, including pragmas inside functions, includes inside for loops, etc. Now, the grammar separates these into statements/blocks that can appear at the top level (pragma, include, function declaration, template declaration, and main component declaration) and statements/blocks that can appear inside function and template bodies.
 
 ## [0.0.3]
 

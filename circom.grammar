@@ -64,7 +64,9 @@
   L9 @left
 }
 
-@top Circuit { (statement ";" | block )* }
+@top Circuit { content<circuitStatement, circuitBlock> }
+
+content<statement, block> { (statement ";" | block )* }
 
 @skip { space | LineComment | BlockComment }
 
@@ -79,15 +81,34 @@ ParameterValueList { OpenParen ParameterValues { list<topLevelNumericExpression>
 Array<item> { OpenBracket Items { list<item> } CloseBracket }
 nestedArray<item> { item | Array<nestedArray<item>> }
 
-statement {
+circuitStatement[@isGroup="CircomContent"] {
     Pragma { kw<"pragma"> kw<"circom"> CompilerVersion }
   | Include { kw<"include"> String }
-  | InputSignalDeclaration { kw<"signal"> kw<"input"> Identifier ArraySize* }
+  | MainComponentDeclaration
+}
+
+MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Call }
+PublicSignalsList { OpenBrace kw<"public"> OpenBracket list<Identifier> CloseBracket CloseBrace }
+
+circuitBlock[@isGroup="CircomContent"] {
+    FunctionDeclaration
+  | TemplateDeclaration
+}
+
+FunctionDeclaration { kw<"function"> Identifier ParameterList FunctionBody }
+FunctionBody { body }
+
+TemplateDeclaration { kw<"template"> kw<"parallel">? Identifier ParameterList TemplateBody }
+TemplateBody { body }
+
+body { OpenBrace (statement ";" | block)* CloseBrace }
+
+statement {
+    InputSignalDeclaration { kw<"signal"> kw<"input"> Identifier ArraySize* }
   | OutputSignalDeclaration { kw<"signal"> kw<"output"> Identifier ArraySize* }
   | IntermediateSignalDeclaration { kw<"signal"> Identifier ArraySize* ~reference }
   | VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
   | ComponentDeclaration { kw<"component"> Identifier ArraySize* ("=" Call)? }
-  | MainComponentDeclaration
   | Assignment
   | arithmeticAssignment
   | bitwiseAssignment
@@ -105,24 +126,11 @@ statement {
 // there's no way to syntactically distinguish between them.
 Assignment { Identifier ArrayIndex* "=" nestedArray<topLevelNumericExpression> }
 
-MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Call }
-PublicSignalsList { OpenBrace kw<"public"> OpenBracket list<Identifier> CloseBracket CloseBrace }
-
 block {
-    FunctionDeclaration
-  | TemplateDeclaration
-  | If
+    If
   | ForLoop
   | WhileLoop
 }
-
-FunctionDeclaration { kw<"function"> Identifier ParameterList FunctionBody }
-FunctionBody { body }
-
-TemplateDeclaration { kw<"template"> kw<"parallel">? Identifier ParameterList TemplateBody }
-TemplateBody { body }
-
-body { OpenBrace (statement ";" | block)* CloseBrace }
 
 If { kw<"if"> OpenParen IfCondition CloseParen IfBody (kw<"else"> ElseBody)? }
 IfCondition { booleanExpression }
