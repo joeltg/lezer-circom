@@ -28,8 +28,5 @@ export const
   Assignment = 68,
   Assert = 84,
   Log = 86,
-  IfCondition = 90,
-  ForLoopCondition = 97,
-  WhileLoopCondition = 102,
-  TemplateDeclaration = 104,
-  TemplateBody = 107
+  TemplateDeclaration = 108,
+  TemplateBody = 111
