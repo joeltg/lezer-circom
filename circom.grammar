@@ -86,7 +86,7 @@ statement {
   | OutputSignalDeclaration { kw<"signal"> kw<"output"> Identifier ArraySize* }
   | IntermediateSignalDeclaration { kw<"signal"> Identifier ArraySize* ~reference }
   | VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
-  | ComponentDeclaration { kw<"component"> Identifier ArraySize* ("=" Call)? }
+  | ComponentDeclaration { kw<"component"> Identifier (ArraySize* | "=" Call) }
   | MainComponentDeclaration
   | Assignment
   | arithmeticAssignment

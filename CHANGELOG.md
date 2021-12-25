@@ -6,11 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Changed
+### Added
 
 - Added `Items` named node to `Array`
 - Added `Parameters` to `ParameterList` and `ParameterValues` to `ParameterValueList`
 - Added return statement
+
+### Changed
+
+- More strict `ComponentDeclaration` rule
 
 ## [0.0.3]
 
