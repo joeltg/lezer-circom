@@ -180,7 +180,7 @@ Value { Identifier Signal { "." Identifier }? ArrayIndex* ~reference }
 // and then assigned separately, there's no way to syntactically distinguish them.
 Call { Identifier ParameterValueList }
 
-arithmeticOperation {
+arithmeticOperation[@isGroup="ArithmeticOperation"] {
     Addition { numericExpression !L3 "+" numericExpression }
   | Subtraction { numericExpression !L3 "-" numericExpression }
   | Multiplication { numericExpression !L2 "*" numericExpression }
@@ -190,7 +190,7 @@ arithmeticOperation {
   | Remainder { numericExpression !L2 "\%" numericExpression }
 }
 
-arithmeticAssignment {
+arithmeticAssignment[@isGroup="ArithmeticAssignment"] {
     AdditionAssignment { Identifier "+=" topLevelNumericExpression }
   | SubtractionAssignment { Identifier "-=" topLevelNumericExpression }
   | MultiplicationAssignment { Identifier "*=" topLevelNumericExpression }
@@ -202,7 +202,7 @@ arithmeticAssignment {
   | Decrement { Identifier "--" }
 }
 
-bitwiseOperation {
+bitwiseOperation[@isGroup="BitwiseOperation"] {
     BitwiseAnd { numericExpression !L5 "&" numericExpression }
   | BitwiseOr { numericExpression !L7 "|" numericExpression }
   | BitwiseComplement { "~" numericExpression }
@@ -211,7 +211,7 @@ bitwiseOperation {
   | LeftShift { numericExpression !L4 "<<" numericExpression }
 }
 
-bitwiseAssignment {
+bitwiseAssignment[@isGroup="BitwiseAssignment"] {
     BitwiseAndAssignment { Identifier "&=" topLevelNumericExpression }
   | BitwiseOrAssignment { Identifier "|=" topLevelNumericExpression }
   | BitwiseComplementAssignment { "~=" Identifier }
