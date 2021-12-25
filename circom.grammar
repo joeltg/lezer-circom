@@ -98,7 +98,8 @@ statement {
   | ConstrainSignal { topLevelNumericExpression "===" topLevelNumericExpression }
   | Assert { kw<"assert"> OpenParen booleanExpression CloseParen }
     // the docs say conditionals aren't allowed here
-  | Log { kw<"log"> OpenParen (numericExpression | booleanExpression) CloseParen } 
+  | Log { kw<"log"> OpenParen (numericExpression | booleanExpression) CloseParen }
+  | Return { kw<"return"> numericExpression }
 }
 
 // Assignment could either be a component assignment or a variable assignment,
