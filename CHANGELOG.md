@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - More strict `ComponentDeclaration` rule
 - merge input, output, and intermediate signal declarations into a single `SignalDeclaration`
+- refactor control flow body parsing
 
 ## [0.0.3]
 

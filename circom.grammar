@@ -64,7 +64,8 @@
   L9 @left
 }
 
-@top Circuit { (statement ";" | block )* }
+
+@top Circuit { body }
 
 @skip { space | LineComment | BlockComment }
 
@@ -79,7 +80,9 @@ ParameterValueList { OpenParen ParameterValues { list<topLevelNumericExpression>
 Array<item> { OpenBracket Items { list<item> } CloseBracket }
 nestedArray<item> { item | Array<nestedArray<item>> }
 
-statement {
+body { (statement ";" | block)* }
+
+statement[@isGroup="Statement"] {
     Pragma { kw<"pragma"> kw<"circom"> CompilerVersion }
   | Include { kw<"include"> String }
   | SignalDeclaration { kw<"signal"> (kw<"input"> | kw<"output">)? Identifier ArraySize* ~reference }
@@ -107,7 +110,7 @@ Assignment { Identifier ArrayIndex* "=" nestedArray<topLevelNumericExpression> }
 MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Call }
 PublicSignalsList { OpenBrace kw<"public"> OpenBracket list<Identifier> CloseBracket CloseBrace }
 
-block {
+block[@isGroup="Block"] {
     FunctionDeclaration
   | TemplateDeclaration
   | If
@@ -115,31 +118,31 @@ block {
   | WhileLoop
 }
 
-FunctionDeclaration { kw<"function"> Identifier ParameterList FunctionBody }
+FunctionDeclaration { kw<"function"> Identifier ParameterList OpenBrace FunctionBody CloseBrace }
 FunctionBody { body }
 
-TemplateDeclaration { kw<"template"> kw<"parallel">? Identifier ParameterList TemplateBody }
+TemplateDeclaration { kw<"template"> kw<"parallel">? Identifier ParameterList OpenBrace TemplateBody CloseBrace }
 TemplateBody { body }
 
-body { OpenBrace (statement ";" | block)* CloseBrace }
-
-If { kw<"if"> OpenParen IfCondition CloseParen IfBody (kw<"else"> ElseBody)? }
-IfCondition { booleanExpression }
-IfBody { statement ";" | body }
-ElseBody { statement ";" | body }
-
-ForLoop {
-  kw<"for"> OpenParen ForLoopInitialization ";" ForLoopCondition ";" ForLoopStepCode CloseParen ForLoopBody
+controlFlowBody<name> {
+    statementBody[@name={name}] { statement ";" }
+  | OpenBrace blockBody[@name={name}] { body } CloseBrace
 }
 
+If { kw<"if"> OpenParen IfCondition CloseParen ifBody (kw<"else"> elseBody )? }
+IfCondition { booleanExpression }
+ifBody { controlFlowBody<"IfBody"> }
+elseBody { controlFlowBody<"ElseBody"> }
+
+ForLoop { kw<"for"> OpenParen ForLoopInitialization ";" ForLoopCondition ";" ForLoopStepCode CloseParen forLoopBody }
 ForLoopInitialization { statement }
 ForLoopCondition { booleanExpression }
 ForLoopStepCode { statement }
-ForLoopBody { statement ";" | body }
+forLoopBody { controlFlowBody<"ForLoopBody"> }
 
-WhileLoop { kw<"while"> OpenParen WhileLoopCondition CloseParen WhileLoopBody }
+WhileLoop { kw<"while"> OpenParen WhileLoopCondition CloseParen whileLoopBody }
 WhileLoopCondition { booleanExpression }
-WhileLoopBody { statement ";" | body }
+whileLoopBody { controlFlowBody<"WhileLoopBody"> }
 
 booleanExpression[@isGroup="BooleanExpression"] {
     BooleanExpressionGroup { OpenParen booleanExpression CloseParen }
@@ -156,9 +159,10 @@ booleanExpression[@isGroup="BooleanExpression"] {
 
 topLevelNumericExpression[@isGroup="NumericExpression"] { Conditional | numericExpression }
 
-Conditional {
-  Condition { booleanExpression } "?" TrueValue { numericExpression } ":" FalseValue { numericExpression } 
-}
+Conditional { Condition "?" TrueValue ":" FalseValue }
+Condition { booleanExpression }
+TrueValue { numericExpression }
+FalseValue { numericExpression } 
 
 numericExpression {
     NumericExpressionGroup { OpenParen numericExpression CloseParen }
@@ -169,8 +173,7 @@ numericExpression {
   | Number
 }
 
-// Value could either be a variable or a signal,
-// there's no way to syntactically distinguish them.
+// Value could either be a variable, local signal, or component signal
 Value { Identifier Signal { "." Identifier }? ArrayIndex* ~reference }
 
 // Call could either be a template or function call - since components can be initialized
