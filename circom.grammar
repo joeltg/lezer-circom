@@ -82,9 +82,7 @@ nestedArray<item> { item | Array<nestedArray<item>> }
 statement {
     Pragma { kw<"pragma"> kw<"circom"> CompilerVersion }
   | Include { kw<"include"> String }
-  | InputSignalDeclaration { kw<"signal"> kw<"input"> Identifier ArraySize* }
-  | OutputSignalDeclaration { kw<"signal"> kw<"output"> Identifier ArraySize* }
-  | IntermediateSignalDeclaration { kw<"signal"> Identifier ArraySize* ~reference }
+  | SignalDeclaration { kw<"signal"> (kw<"input"> | kw<"output">)? Identifier ArraySize* ~reference }
   | VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
   | ComponentDeclaration { kw<"component"> Identifier (ArraySize* | "=" Call) }
   | MainComponentDeclaration

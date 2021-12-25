@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - `MainComponentDeclaration` now has a `Call` node instead of inline `Identifier ParameterList` nodes.
+- merge input, output, and intermediate signal declarations into a single `SignalDeclaration`
 
 ## [0.0.2]
 
