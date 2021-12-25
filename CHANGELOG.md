@@ -8,12 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Added return statement
 - Added `Items` named node to `Array`
 - Added `Parameters` to `ParameterList` and `ParameterValues` to `ParameterValueList`
-- Merged `InputSignalDeclaration`, `OutputSignalDeclaration`, and `IntermediateSignalDeclaration` nodes into a single `SignalDeclaration` node
-- More strict component declaration rule
-- Previously, the parser would parse any statement and block in any context, including pragmas inside functions, includes inside for loops, etc. Now, the grammar enforces the kinds of statements and blocks that can appear at the top level (pragma, include, function declaration, template declaration, and main component declaration), inside templates, and inside functions.
 
 ## [0.0.3]
 
