@@ -33,6 +33,6 @@
 	},
 	"devDependencies": {
 		"@lezer/generator": "^0.15.2",
-		"ava": "^4.0.0-rc.1"
+		"ava": "^4.0.0"
 	}
 }
