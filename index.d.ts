@@ -1,3 +1,2 @@
-import type { LRParser } from "@lezer/lr"
-
-export const parser: LRParser
+export { parser } from "./circom.js";
+export * as terms from "./circom.terms.js";
