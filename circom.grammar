@@ -22,6 +22,8 @@
 // actually possible to with a "context tracker" but I haven't used them before
 // and it seems complicated https://lezer.codemirror.net/docs/ref/#lr.ContextTracker)
 
+@external propSource circomHighlighting from "./highlight.js"
+
 @tokens {
   Number { std.digit+ }
   CompilerVersion { Number "." Number "." Number }
@@ -64,51 +66,71 @@
   L9 @left
 }
 
-
 @top Circuit { body }
 
 @skip { space | LineComment | BlockComment }
 
 kw<word> { @specialize[@name={word}]<Identifier, word> }
-list<item> { (item ("," item)*)? }
+list<element> { (element ("," element)*)? }
 
 ArraySize { OpenBracket topLevelNumericExpression CloseBracket }
 ArrayIndex { OpenBracket topLevelNumericExpression CloseBracket }
-ParameterList { OpenParen Parameters { list<Identifier> } CloseParen }
-ParameterValueList { OpenParen ParameterValues { list<topLevelNumericExpression> } CloseParen }
+ParameterList { OpenParen Parameters CloseParen }
+Parameters { list<Identifier> }
+ParameterValueList { OpenParen ParameterValues CloseParen }
+ParameterValues { list<topLevelNumericExpression> }
 
-Array<item> { OpenBracket Items { list<item> } CloseBracket }
-nestedArray<item> { item | Array<nestedArray<item>> }
+Array<element> { OpenBracket ArrayElements<element> CloseBracket }
+ArrayElements<element> { list<element> }
+nestedArray<element> { element | Array<nestedArray<element>> }
 
 body { (statement ";" | block)* }
 
 statement[@isGroup="Statement"] {
-    Pragma { kw<"pragma"> kw<"circom"> CompilerVersion }
-  | Include { kw<"include"> String }
-  | SignalDeclaration { kw<"signal"> (kw<"input"> | kw<"output">)? Identifier ArraySize* ~reference }
-  | VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
-  | ComponentDeclaration { kw<"component"> Identifier (ArraySize* | "=" Call) }
+    Pragma
+  | Include
+  | SignalDeclaration
+  | VariableDeclaration
+  | ComponentDeclaration
   | MainComponentDeclaration
   | Assignment
   | arithmeticAssignment
   | bitwiseAssignment
-  | AssignSignalRight { topLevelNumericExpression "-->" Value }
-  | AssignSignalLeft { Value "<--" topLevelNumericExpression }
-  | AssignConstraintSignalRight { topLevelNumericExpression "==>" Value }
-  | AssignConstraintSignalLeft { Value "<==" topLevelNumericExpression }
-  | ConstrainSignal { topLevelNumericExpression "===" topLevelNumericExpression }
-  | Assert { kw<"assert"> OpenParen booleanExpression CloseParen }
-    // the docs say conditionals aren't allowed here
-  | Log { kw<"log"> OpenParen (numericExpression | booleanExpression) CloseParen }
-  | Return { kw<"return"> numericExpression }
+  | AssignSignalRight
+  | AssignSignalLeft
+  | AssignConstraintSignalRight
+  | AssignConstraintSignalLeft
+  | ConstrainSignal
+  | Assert
+  | Log
+  | Return
 }
+
+Pragma { kw<"pragma"> kw<"circom"> CompilerVersion }
+Include { kw<"include"> String }
+SignalDeclaration { kw<"signal"> (kw<"input"> | kw<"output">)? Identifier ArraySize* ~reference }
+VariableDeclaration { kw<"var"> Identifier ArraySize* ("=" nestedArray<topLevelNumericExpression>)? }
+ComponentDeclaration { kw<"component"> Identifier (ArraySize* | "=" Call) }
+
+MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Call }
+PublicSignalsList { OpenBrace kw<"public"> OpenBracket list<Identifier> CloseBracket CloseBrace }
 
 // Assignment could either be a component assignment or a variable assignment,
 // there's no way to syntactically distinguish between them.
 Assignment { Identifier ArrayIndex* "=" nestedArray<topLevelNumericExpression> }
 
-MainComponentDeclaration { kw<"component"> kw<"main"> PublicSignalsList? "=" Call }
-PublicSignalsList { OpenBrace kw<"public"> OpenBracket list<Identifier> CloseBracket CloseBrace }
+AssignSignalRight { topLevelNumericExpression "-->" Value }
+AssignSignalLeft { Value "<--" topLevelNumericExpression }
+AssignConstraintSignalRight { topLevelNumericExpression "==>" Value }
+AssignConstraintSignalLeft { Value "<==" topLevelNumericExpression }
+ConstrainSignal { topLevelNumericExpression "===" topLevelNumericExpression }
+
+Assert { kw<"assert"> OpenParen booleanExpression CloseParen }
+
+// the docs say conditionals aren't allowed here
+Log { kw<"log"> OpenParen (numericExpression | booleanExpression) CloseParen }
+
+Return { kw<"return"> numericExpression }
 
 block[@isGroup="Block"] {
     FunctionDeclaration
@@ -145,17 +167,29 @@ WhileLoopCondition { booleanExpression }
 whileLoopBody { controlFlowBody<"WhileLoopBody"> }
 
 booleanExpression[@isGroup="BooleanExpression"] {
-    BooleanExpressionGroup { OpenParen booleanExpression CloseParen }
-  | BooleanAnd { booleanExpression !L8 "&&" booleanExpression }
-  | BooleanOr { booleanExpression !L9 "||" booleanExpression }
-  | BooleanNegation { "!" booleanExpression }
-  | LT { numericExpression "<" numericExpression }
-  | LTE { numericExpression "<=" numericExpression }
-  | GT { numericExpression ">" numericExpression }
-  | GTE { numericExpression ">=" numericExpression }
-  | EQ { numericExpression "==" numericExpression }
-  | NEQ { numericExpression "!=" numericExpression }
+    BooleanExpressionGroup
+  | BooleanAnd
+  | BooleanOr
+  | BooleanNegation
+  | LT
+  | LTE
+  | GT
+  | GTE
+  | EQ
+  | NEQ
 }
+
+BooleanExpressionGroup { OpenParen booleanExpression CloseParen }
+BooleanAnd { booleanExpression !L8 "&&" booleanExpression }
+BooleanOr { booleanExpression !L9 "||" booleanExpression }
+BooleanNegation { "!" booleanExpression }
+
+LT { numericExpression "<" numericExpression }
+LTE { numericExpression "<=" numericExpression }
+GT { numericExpression ">" numericExpression }
+GTE { numericExpression ">=" numericExpression }
+EQ { numericExpression "==" numericExpression }
+NEQ { numericExpression "!=" numericExpression }
 
 topLevelNumericExpression[@isGroup="NumericExpression"] { Conditional | numericExpression }
 
@@ -165,7 +199,7 @@ TrueValue { numericExpression }
 FalseValue { numericExpression } 
 
 numericExpression {
-    NumericExpressionGroup { OpenParen numericExpression CloseParen }
+    NumericExpressionGroup
   | arithmeticOperation
   | bitwiseOperation
   | Call
@@ -173,49 +207,84 @@ numericExpression {
   | Number
 }
 
-// Value could either be a variable, local signal, or component signal
-Value { Identifier Signal { "." Identifier }? ArrayIndex* ~reference }
+NumericExpressionGroup { OpenParen numericExpression CloseParen }
 
 // Call could either be a template or function call - since components can be initialized
 // and then assigned separately, there's no way to syntactically distinguish them.
 Call { Identifier ParameterValueList }
 
+// Value could either be a variable, local signal, or component signal
+Value { Identifier Signal? ArrayIndex* ~reference }
+Signal { "." Identifier }
+
 arithmeticOperation[@isGroup="ArithmeticOperation"] {
-    Addition { numericExpression !L3 "+" numericExpression }
-  | Subtraction { numericExpression !L3 "-" numericExpression }
-  | Multiplication { numericExpression !L2 "*" numericExpression }
-  | Exponentiation { numericExpression !L1 "**" numericExpression }
-  | Division { numericExpression !L2 divide numericExpression }
-  | Quotient { numericExpression !L2 "\\" numericExpression }
-  | Remainder { numericExpression !L2 "\%" numericExpression }
+    Addition
+  | Subtraction
+  | Multiplication
+  | Exponentiation
+  | Division
+  | Quotient
+  | Remainder
 }
+
+Addition { numericExpression !L3 "+" numericExpression }
+Subtraction { numericExpression !L3 "-" numericExpression }
+Multiplication { numericExpression !L2 "*" numericExpression }
+Exponentiation { numericExpression !L1 "**" numericExpression }
+Division { numericExpression !L2 divide numericExpression }
+Quotient { numericExpression !L2 "\\" numericExpression }
+Remainder { numericExpression !L2 "\%" numericExpression }
 
 arithmeticAssignment[@isGroup="ArithmeticAssignment"] {
-    AdditionAssignment { Identifier "+=" topLevelNumericExpression }
-  | SubtractionAssignment { Identifier "-=" topLevelNumericExpression }
-  | MultiplicationAssignment { Identifier "*=" topLevelNumericExpression }
-  | ExponentiationAssignment { Identifier "**=" topLevelNumericExpression }
-  | DivisionAssignment { Identifier divideAssign topLevelNumericExpression }
-  | QuotientAssignment { Identifier "\\=" topLevelNumericExpression }
-  | RemainderAssignment { Identifier "\%=" topLevelNumericExpression }
-  | Increment { Identifier "++" }
-  | Decrement { Identifier "--" }
+    AdditionAssignment
+  | SubtractionAssignment
+  | MultiplicationAssignment
+  | ExponentiationAssignment
+  | DivisionAssignment
+  | QuotientAssignment
+  | RemainderAssignment
+  | Increment
+  | Decrement
 }
+
+AdditionAssignment { Identifier "+=" topLevelNumericExpression }
+SubtractionAssignment { Identifier "-=" topLevelNumericExpression }
+MultiplicationAssignment { Identifier "*=" topLevelNumericExpression }
+ExponentiationAssignment { Identifier "**=" topLevelNumericExpression }
+DivisionAssignment { Identifier divideAssign topLevelNumericExpression }
+QuotientAssignment { Identifier "\\=" topLevelNumericExpression }
+RemainderAssignment { Identifier "\%=" topLevelNumericExpression }
+Increment { Identifier "++" }
+Decrement { Identifier "--" }
 
 bitwiseOperation[@isGroup="BitwiseOperation"] {
-    BitwiseAnd { numericExpression !L5 "&" numericExpression }
-  | BitwiseOr { numericExpression !L7 "|" numericExpression }
-  | BitwiseComplement { "~" numericExpression }
-  | ExclusiveOr { numericExpression !L6 "^" numericExpression }
-  | RightShift { numericExpression !L4 ">>" numericExpression }
-  | LeftShift { numericExpression !L4 "<<" numericExpression }
+    BitwiseAnd
+  | BitwiseOr
+  | BitwiseComplement
+  | ExclusiveOr
+  | RightShift
+  | LeftShift
 }
 
+BitwiseAnd { numericExpression !L5 "&" numericExpression }
+BitwiseOr { numericExpression !L7 "|" numericExpression }
+BitwiseComplement { "~" numericExpression }
+ExclusiveOr { numericExpression !L6 "^" numericExpression }
+RightShift { numericExpression !L4 ">>" numericExpression }
+LeftShift { numericExpression !L4 "<<" numericExpression }
+
 bitwiseAssignment[@isGroup="BitwiseAssignment"] {
-    BitwiseAndAssignment { Identifier "&=" topLevelNumericExpression }
-  | BitwiseOrAssignment { Identifier "|=" topLevelNumericExpression }
-  | BitwiseComplementAssignment { "~=" Identifier }
-  | ExclusiveOrAssignment { Identifier "^=" topLevelNumericExpression }
-  | RightShiftAssignment { Identifier ">>=" topLevelNumericExpression }
-  | LeftShiftAssignment { Identifier "<<=" topLevelNumericExpression }
+    BitwiseAndAssignment
+  | BitwiseOrAssignment
+  | BitwiseComplementAssignment
+  | ExclusiveOrAssignment
+  | RightShiftAssignment
+  | LeftShiftAssignment
 }
+
+BitwiseAndAssignment { Identifier "&=" topLevelNumericExpression }
+BitwiseOrAssignment { Identifier "|=" topLevelNumericExpression }
+BitwiseComplementAssignment { "~=" Identifier }
+ExclusiveOrAssignment { Identifier "^=" topLevelNumericExpression }
+RightShiftAssignment { Identifier ">>=" topLevelNumericExpression }
+LeftShiftAssignment { Identifier "<<=" topLevelNumericExpression }
