@@ -1,6 +1,6 @@
 {
 	"name": "lezer-circom",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "A Lezer grammar for the Circom language",
 	"type": "module",
 	"main": "index.js",
